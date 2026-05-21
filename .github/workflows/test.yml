@@ -33,52 +33,53 @@ jobs:
           pip install -r requirements.txt
       
       - name: Test configs load
-        run: python3 << 'EOF'
-import sys
-import json
-sys.path.insert(0, 'scripts')
+        run: |
+          python3 << 'ENDPYTHON'
+          import sys
+          import json
+          sys.path.insert(0, 'scripts')
 
-print("\n" + "="*80)
-print("TESTING CONFIGURATION FILES")
-print("="*80 + "\n")
+          print("\n" + "="*80)
+          print("TESTING CONFIGURATION FILES")
+          print("="*80 + "\n")
 
-# Test hazards.json
-with open('config/hazards.json') as f:
-    hazards = json.load(f)
-print(f"✓ Hazards loaded: {list(hazards.keys())}")
-assert len(hazards) == 8, f"Expected 8 hazards, got {len(hazards)}"
-assert 'WIND' in hazards, "WIND hazard missing"
-assert 'FLASH_FREEZE' in hazards, "FLASH_FREEZE hazard missing"
-print(f"✓ All 8 hazards present and valid\n")
+          # Test hazards.json
+          with open('config/hazards.json') as f:
+              hazards = json.load(f)
+          print(f"✓ Hazards loaded: {list(hazards.keys())}")
+          assert len(hazards) == 8, f"Expected 8 hazards, got {len(hazards)}"
+          assert 'WIND' in hazards, "WIND hazard missing"
+          assert 'FLASH_FREEZE' in hazards, "FLASH_FREEZE hazard missing"
+          print(f"✓ All 8 hazards present and valid\n")
 
-# Test locations.json
-with open('config/locations.json') as f:
-    locations = json.load(f)
-print(f"✓ Locations loaded: {list(locations.keys())}")
-assert len(locations) >= 5, f"Expected at least 5 locations, got {len(locations)}"
-assert 'krno' in locations, "KRNO location missing"
-print(f"✓ All {len(locations)} locations present\n")
+          # Test locations.json
+          with open('config/locations.json') as f:
+              locations = json.load(f)
+          print(f"✓ Locations loaded: {list(locations.keys())}")
+          assert len(locations) >= 5, f"Expected at least 5 locations, got {len(locations)}"
+          assert 'krno' in locations, "KRNO location missing"
+          print(f"✓ All {len(locations)} locations present\n")
 
-# Test data-sources.json
-with open('config/data-sources.json') as f:
-    sources = json.load(f)
-print(f"✓ Data sources loaded: {list(sources.keys())}")
-assert 'refs' in sources, "REFS config missing"
-assert 'nws_alerts' in sources, "NWS alerts config missing"
-print(f"✓ All data sources configured\n")
+          # Test data-sources.json
+          with open('config/data-sources.json') as f:
+              sources = json.load(f)
+          print(f"✓ Data sources loaded: {list(sources.keys())}")
+          assert 'refs' in sources, "REFS config missing"
+          assert 'nws_alerts' in sources, "NWS alerts config missing"
+          print(f"✓ All data sources configured\n")
 
-# Test risk-matrix.json
-with open('config/risk-matrix.json') as f:
-    risk_matrix = json.load(f)
-print(f"✓ Risk matrix loaded")
-assert 'risk_matrix' in risk_matrix, "Risk matrix data missing"
-assert 'likelihood_thresholds' in risk_matrix, "Likelihood thresholds missing"
-print(f"✓ Risk matrix valid\n")
+          # Test risk-matrix.json
+          with open('config/risk-matrix.json') as f:
+              risk_matrix = json.load(f)
+          print(f"✓ Risk matrix loaded")
+          assert 'risk_matrix' in risk_matrix, "Risk matrix data missing"
+          assert 'likelihood_thresholds' in risk_matrix, "Likelihood thresholds missing"
+          print(f"✓ Risk matrix valid\n")
 
-print("="*80)
-print("✅ ALL CONFIGURATION FILES VALID")
-print("="*80 + "\n")
-EOF
+          print("="*80)
+          print("✅ ALL CONFIGURATION FILES VALID")
+          print("="*80 + "\n")
+          ENDPYTHON
 
   test-utils:
     runs-on: ubuntu-latest
@@ -99,134 +100,135 @@ EOF
           pip install -r requirements.txt
       
       - name: Test utility functions
-        run: python3 << 'EOF'
-import sys
-sys.path.insert(0, 'scripts')
-from utils import (
-    load_hazards, load_locations, load_sources, load_risk_matrix,
-    calculate_risk, select_impact_level, flash_freeze_impact_level,
-    probability_to_likelihood, block_index_to_fxx,
-    k_to_f, mps_to_mph, m_to_sm
-)
+        run: |
+          python3 << 'ENDPYTHON'
+          import sys
+          sys.path.insert(0, 'scripts')
+          from utils import (
+              load_hazards, load_locations, load_sources, load_risk_matrix,
+              calculate_risk, select_impact_level, flash_freeze_impact_level,
+              probability_to_likelihood, block_index_to_fxx,
+              k_to_f, mps_to_mph, m_to_sm
+          )
 
-print("\n" + "="*80)
-print("TESTING UTILITY FUNCTIONS")
-print("="*80 + "\n")
+          print("\n" + "="*80)
+          print("TESTING UTILITY FUNCTIONS")
+          print("="*80 + "\n")
 
-# Test config loaders
-print("Testing config loaders...")
-assert len(load_hazards()) == 8
-assert len(load_locations()) >= 5
-assert 'refs' in load_sources()
-assert 'risk_matrix' in load_risk_matrix()
-print("✓ All config loaders work\n")
+          # Test config loaders
+          print("Testing config loaders...")
+          assert len(load_hazards()) == 8
+          assert len(load_locations()) >= 5
+          assert 'refs' in load_sources()
+          assert 'risk_matrix' in load_risk_matrix()
+          print("✓ All config loaders work\n")
 
-# Test risk matrix
-print("Testing risk matrix calculations...")
-tests = [
-    (95, 4, 4, "High prob + high impact = major risk"),
-    (50, 3, 2, "Mid prob + mid impact = minor risk"),
-    (10, 2, 1, "Low prob + low impact = little risk"),
-    (100, 5, 5, "Max prob + max impact = extreme"),
-    (0, 5, 0, "Zero prob = no risk"),
-]
-for prob, impact, expected, description in tests:
-    result = calculate_risk(prob, impact)
-    assert result == expected, f"Risk calc failed: {description}"
-    print(f"✓ P={prob}%, impact={impact} → risk={result} ({description})")
-print()
+          # Test risk matrix
+          print("Testing risk matrix calculations...")
+          tests = [
+              (95, 4, 4, "High prob + high impact = major risk"),
+              (50, 3, 2, "Mid prob + mid impact = minor risk"),
+              (10, 2, 1, "Low prob + low impact = little risk"),
+              (100, 5, 5, "Max prob + max impact = extreme"),
+              (0, 5, 0, "Zero prob = no risk"),
+          ]
+          for prob, impact, expected, description in tests:
+              result = calculate_risk(prob, impact)
+              assert result == expected, f"Risk calc failed: {description}"
+              print(f"✓ P={prob}%, impact={impact} → risk={result} ({description})")
+          print()
 
-# Test impact level selection
-print("Testing impact level selection...")
-wind_thresh = [30, 45, 58, 65]
-tests = [
-    (20, 1, "below threshold 1"),
-    (35, 2, "between threshold 1-2"),
-    (50, 3, "between threshold 2-3"),
-    (60, 4, "between threshold 3-4"),
-    (70, 5, "above threshold 4"),
-]
-for value, expected, desc in tests:
-    result = select_impact_level(value, wind_thresh)
-    assert result == expected, f"Impact level failed: {desc}"
-    print(f"✓ Wind {value} mph → level {result} ({desc})")
-print()
+          # Test impact level selection
+          print("Testing impact level selection...")
+          wind_thresh = [30, 45, 58, 65]
+          tests = [
+              (20, 1, "below threshold 1"),
+              (35, 2, "between threshold 1-2"),
+              (50, 3, "between threshold 2-3"),
+              (60, 4, "between threshold 3-4"),
+              (70, 5, "above threshold 4"),
+          ]
+          for value, expected, desc in tests:
+              result = select_impact_level(value, wind_thresh)
+              assert result == expected, f"Impact level failed: {desc}"
+              print(f"✓ Wind {value} mph → level {result} ({desc})")
+          print()
 
-# Test inverted impact levels (visibility, cold)
-print("Testing inverted impact levels...")
-vis_thresh = [5.0, 3.0, 1.0, 0.50]
-tests = [
-    (10, 1, "high visibility = low impact"),
-    (4, 2, "medium visibility"),
-    (2, 3, "low visibility"),
-    (0.25, 5, "very low visibility = high impact"),
-]
-for value, expected, desc in tests:
-    result = select_impact_level(value, vis_thresh, inverted=True)
-    assert result == expected, f"Inverted impact level failed: {desc}"
-    print(f"✓ Visibility {value} SM → level {result} ({desc})")
-print()
+          # Test inverted impact levels (visibility, cold)
+          print("Testing inverted impact levels...")
+          vis_thresh = [5.0, 3.0, 1.0, 0.50]
+          tests = [
+              (10, 1, "high visibility = low impact"),
+              (4, 2, "medium visibility"),
+              (2, 3, "low visibility"),
+              (0.25, 5, "very low visibility = high impact"),
+          ]
+          for value, expected, desc in tests:
+              result = select_impact_level(value, vis_thresh, inverted=True)
+              assert result == expected, f"Inverted impact level failed: {desc}"
+              print(f"✓ Visibility {value} SM → level {result} ({desc})")
+          print()
 
-# Test flash freeze
-print("Testing flash freeze impact...")
-tests = [
-    (30, False, 1, "dry surface = no risk"),
-    (40, True, 1, "wet, warm = no risk"),
-    (35, True, 2, "wet, cool"),
-    (30, True, 3, "wet, cold"),
-    (26, True, 4, "wet, very cold"),
-]
-for tw, wet, expected, desc in tests:
-    result = flash_freeze_impact_level(tw, wet)
-    assert result == expected, f"Flash freeze failed: {desc}"
-    print(f"✓ Tw={tw}°F, wet={wet} → level {result} ({desc})")
-print()
+          # Test flash freeze
+          print("Testing flash freeze impact...")
+          tests = [
+              (30, False, 1, "dry surface = no risk"),
+              (40, True, 1, "wet, warm = no risk"),
+              (35, True, 2, "wet, cool"),
+              (30, True, 3, "wet, cold"),
+              (26, True, 4, "wet, very cold"),
+          ]
+          for tw, wet, expected, desc in tests:
+              result = flash_freeze_impact_level(tw, wet)
+              assert result == expected, f"Flash freeze failed: {desc}"
+              print(f"✓ Tw={tw}°F, wet={wet} → level {result} ({desc})")
+          print()
 
-# Test unit conversions
-print("Testing unit conversions...")
-assert abs(k_to_f(273.15) - 32.0) < 0.1, "Kelvin conversion failed"
-print(f"✓ 273.15K = {k_to_f(273.15):.1f}°F (expect 32.0)")
+          # Test unit conversions
+          print("Testing unit conversions...")
+          assert abs(k_to_f(273.15) - 32.0) < 0.1, "Kelvin conversion failed"
+          print(f"✓ 273.15K = {k_to_f(273.15):.1f}°F (expect 32.0)")
 
-assert abs(mps_to_mph(13.41) - 30.0) < 0.1, "m/s conversion failed"
-print(f"✓ 13.41 m/s = {mps_to_mph(13.41):.1f} mph (expect ~30)")
+          assert abs(mps_to_mph(13.41) - 30.0) < 0.1, "m/s conversion failed"
+          print(f"✓ 13.41 m/s = {mps_to_mph(13.41):.1f} mph (expect ~30)")
 
-assert abs(m_to_sm(4828) - 3.0) < 0.1, "meters to SM conversion failed"
-print(f"✓ 4828 m = {m_to_sm(4828):.2f} SM (expect ~3.0)")
-print()
+          assert abs(m_to_sm(4828) - 3.0) < 0.1, "meters to SM conversion failed"
+          print(f"✓ 4828 m = {m_to_sm(4828):.2f} SM (expect ~3.0)")
+          print()
 
-# Test timeline blocks
-print("Testing timeline block math...")
-tests = [
-    (0, 1, 3, "first block f001-f003"),
-    (1, 4, 6, "second block f004-f006"),
-    (9, 28, 30, "middle block f028-f030"),
-    (19, 58, 60, "last block f058-f060"),
-]
-for idx, exp_start, exp_end, desc in tests:
-    start, end = block_index_to_fxx(idx)
-    assert start == exp_start and end == exp_end, f"Block math failed: {desc}"
-    print(f"✓ Block {idx:2d} → f{start:03d}-f{end:03d} ({desc})")
-print()
+          # Test timeline blocks
+          print("Testing timeline block math...")
+          tests = [
+              (0, 1, 3, "first block f001-f003"),
+              (1, 4, 6, "second block f004-f006"),
+              (9, 28, 30, "middle block f028-f030"),
+              (19, 58, 60, "last block f058-f060"),
+          ]
+          for idx, exp_start, exp_end, desc in tests:
+              start, end = block_index_to_fxx(idx)
+              assert start == exp_start and end == exp_end, f"Block math failed: {desc}"
+              print(f"✓ Block {idx:2d} → f{start:03d}-f{end:03d} ({desc})")
+          print()
 
-# Test probability to likelihood
-print("Testing probability to likelihood mapping...")
-tests = [
-    (5, 1, "very unlikely"),
-    (15, 2, "possible"),
-    (50, 3, "likely"),
-    (75, 4, "very likely"),
-    (95, 5, "near certain"),
-]
-for prob, expected, desc in tests:
-    result = probability_to_likelihood(prob)
-    assert result == expected, f"Likelihood mapping failed: {desc}"
-    print(f"✓ P={prob}% → likelihood={result} ({desc})")
-print()
+          # Test probability to likelihood
+          print("Testing probability to likelihood mapping...")
+          tests = [
+              (5, 1, "very unlikely"),
+              (15, 2, "possible"),
+              (50, 3, "likely"),
+              (75, 4, "very likely"),
+              (95, 5, "near certain"),
+          ]
+          for prob, expected, desc in tests:
+              result = probability_to_likelihood(prob)
+              assert result == expected, f"Likelihood mapping failed: {desc}"
+              print(f"✓ P={prob}% → likelihood={result} ({desc})")
+          print()
 
-print("="*80)
-print("✅ ALL UTILITY FUNCTIONS WORKING CORRECTLY")
-print("="*80 + "\n")
-EOF
+          print("="*80)
+          print("✅ ALL UTILITY FUNCTIONS WORKING CORRECTLY")
+          print("="*80 + "\n")
+          ENDPYTHON
 
   test-refs-fetcher:
     runs-on: ubuntu-latest
@@ -247,49 +249,50 @@ EOF
           pip install -r requirements.txt
       
       - name: Test REFS fetcher loads
-        run: python3 << 'EOF'
-import sys
-sys.path.insert(0, 'scripts')
-from fetch_refs_data import REFSFetcher
+        run: |
+          python3 << 'ENDPYTHON'
+          import sys
+          sys.path.insert(0, 'scripts')
+          from fetch_refs_data import REFSFetcher
 
-print("\n" + "="*80)
-print("TESTING REFS DATA FETCHER")
-print("="*80 + "\n")
+          print("\n" + "="*80)
+          print("TESTING REFS DATA FETCHER")
+          print("="*80 + "\n")
 
-# Test REFSFetcher initialization
-print("Testing REFSFetcher initialization...")
-try:
-    fetcher = REFSFetcher("krno")
-    print(f"✓ Initialized for KRNO")
-    print(f"✓ Location: {fetcher.location['name']}")
-    print(f"✓ Lat/Lon: {fetcher.location['latitude']}, {fetcher.location['longitude']}")
-    print(f"✓ Cycle: {fetcher.cycle:%Y-%m-%d %H}Z")
-    print(f"✓ REFS bucket: {fetcher.refs_config['bucket']}")
-    print()
-    
-    # Test URL building
-    print("Testing URL generation...")
-    url = fetcher.build_grib2_url("control", 1)
-    print(f"✓ Control f001 URL: {url[:80]}...")
-    assert "noaa-rrfs-pds" in url, "AWS bucket not in URL"
-    assert "control" in url, "Member not in URL"
-    assert "f001" in url, "Forecast hour not in URL"
-    print()
-    
-    url = fetcher.build_grib2_url("m018", 60)
-    print(f"✓ Member m018 f060 URL: {url[:80]}...")
-    assert "m018" in url, "Perturbation member not in URL"
-    assert "f060" in url, "Max forecast hour not in URL"
-    print()
-    
-    print("="*80)
-    print("✅ REFS FETCHER MODULE READY")
-    print("="*80 + "\n")
-    
-except Exception as e:
-    print(f"✗ Error: {e}")
-    raise
-EOF
+          # Test REFSFetcher initialization
+          print("Testing REFSFetcher initialization...")
+          try:
+              fetcher = REFSFetcher("krno")
+              print(f"✓ Initialized for KRNO")
+              print(f"✓ Location: {fetcher.location['name']}")
+              print(f"✓ Lat/Lon: {fetcher.location['latitude']}, {fetcher.location['longitude']}")
+              print(f"✓ Cycle: {fetcher.cycle:%Y-%m-%d %H}Z")
+              print(f"✓ REFS bucket: {fetcher.refs_config['bucket']}")
+              print()
+              
+              # Test URL building
+              print("Testing URL generation...")
+              url = fetcher.build_grib2_url("control", 1)
+              print(f"✓ Control f001 URL: {url[:80]}...")
+              assert "noaa-rrfs-pds" in url, "AWS bucket not in URL"
+              assert "control" in url, "Member not in URL"
+              assert "f001" in url, "Forecast hour not in URL"
+              print()
+              
+              url = fetcher.build_grib2_url("m018", 60)
+              print(f"✓ Member m018 f060 URL: {url[:80]}...")
+              assert "m018" in url, "Perturbation member not in URL"
+              assert "f060" in url, "Max forecast hour not in URL"
+              print()
+              
+              print("="*80)
+              print("✅ REFS FETCHER MODULE READY")
+              print("="*80 + "\n")
+              
+          except Exception as e:
+              print(f"✗ Error: {e}")
+              raise
+          ENDPYTHON
 
   test-file-structure:
     runs-on: ubuntu-latest
