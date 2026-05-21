@@ -1,0 +1,66 @@
+name: Fetch Alerts & Observations
+
+on:
+  schedule:
+    # Run every minute to keep alerts/obs fresh
+    - cron: '* * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-alerts-obs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests python-dotenv pyyaml
+      
+      - name: Create .env
+        run: |
+          echo "SYNOPTIC_TOKEN=${{ secrets.SYNOPTIC_TOKEN }}" >> .env
+          echo "DEBUG=false" >> .env
+      
+      - name: Fetch NWS Alerts (WWA)
+        run: |
+          python scripts/fetch_alerts.py --type alerts --location krno
+        timeout-minutes: 2
+        continue-on-error: true
+      
+      - name: Fetch Airport Weather Warnings (AWW)
+        run: |
+          python scripts/fetch_alerts.py --type aww --location krno
+        timeout-minutes: 2
+        continue-on-error: true
+      
+      - name: Fetch ASOS Observations
+        run: |
+          python scripts/fetch_alerts.py --type obs --location krno
+        timeout-minutes: 2
+        continue-on-error: true
+      
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/alerts.json docs/aww.json docs/obs.json docs/metadata.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update alerts and observations - $(date -u +'%Y-%m-%d %H:%MZ')"
+            git push
+          fi
