@@ -1,0 +1,95 @@
+{
+  "refs": {
+    "description": "REFS Regional Ensemble Forecast System â€” EXPERIMENTAL NON-OPERATIONAL RESEARCH ONLY",
+    "bucket": "noaa-rrfs-pds",
+    "region": "us-east-1",
+    "access": "no-sign-request",
+    "base_url": "https://noaa-rrfs-pds.s3.amazonaws.com",
+    "path_template": "rrfs_a/rrfs_a.{YYYYMMDD}/{HH}/{MEMBER}/rrfs.t{HH}z.prslev.f{FHH}.conus_3km.grib2",
+    "path_template_sfc": "rrfs_a/rrfs_a.{YYYYMMDD}/{HH}/{MEMBER}/rrfs.t{HH}z.natlev.f{FHH}.conus_3km.grib2",
+    "members": [
+      "control",
+      "m001", "m002", "m003", "m004", "m005", "m006",
+      "m007", "m008", "m009", "m010", "m011", "m012",
+      "m013", "m014", "m015", "m016", "m017", "m018"
+    ],
+    "member_count": 19,
+    "forecast_hours": 60,
+    "cycle_hours": [0, 6, 12, 18],
+    "cycle_delay_hours": 2,
+    "grib2_index_suffix": ".idx"
+  },
+
+  "nws_alerts": {
+    "description": "NWS Watches, Warnings, Advisories â€” updated every 1 minute",
+    "base_url": "https://api.weather.gov",
+    "alerts_endpoint": "/alerts/active",
+    "params": {
+      "point": "{LAT},{LON}",
+      "status": "actual",
+      "message_type": "alert"
+    },
+    "excluded_event_types": [
+      "Lake Wind Advisory"
+    ],
+    "update_interval_seconds": 60,
+    "timeout_seconds": 10,
+    "headers": {
+      "User-Agent": "EventDSS/1.0 (research; contact@yourdomain.com)",
+      "Accept": "application/geo+json"
+    }
+  },
+
+  "nws_aww": {
+    "description": "Airport Weather Warning for KRNO â€” AWIPS ID AWWRNO, WMO WWUS85 KREV",
+    "base_url": "https://api.weather.gov",
+    "product_endpoint": "/products",
+    "awips_id": "AWWRNO",
+    "wmo_header": "WWUS85 KREV",
+    "office": "REV",
+    "type": "AWW",
+    "latest_endpoint": "/products/types/AWW/locations/REV",
+    "update_interval_seconds": 60,
+    "timeout_seconds": 10,
+    "headers": {
+      "User-Agent": "EventDSS/1.0 (research; contact@yourdomain.com)",
+      "Accept": "application/ld+json"
+    }
+  },
+
+  "asos": {
+    "description": "ASOS 5-minute observations via Synoptic Data API",
+    "base_url": "https://api.synopticdata.com/v2",
+    "station_endpoint": "/stations/timeseries",
+    "latest_endpoint": "/stations/latest",
+    "station": "KRNO",
+    "token_env_var": "SYNOPTIC_TOKEN",
+    "update_interval_seconds": 60,
+    "recent_minutes": 10,
+    "variables": [
+      "wind_speed",
+      "wind_direction",
+      "wind_gust",
+      "air_temp",
+      "dew_point_temperature",
+      "relative_humidity",
+      "visibility",
+      "weather_condition",
+      "cloud_layer_1_code",
+      "cloud_layer_2_code",
+      "cloud_layer_3_code",
+      "precip_accum_one_hour",
+      "sea_level_pressure",
+      "altimeter"
+    ]
+  },
+
+  "update_schedule": {
+    "refs_interval_hours": 6,
+    "refs_cycle_hours": [0, 6, 12, 18],
+    "alerts_interval_seconds": 60,
+    "aww_interval_seconds": 60,
+    "obs_interval_seconds": 60,
+    "frontend_poll_seconds": 30
+  }
+}
