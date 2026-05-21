@@ -1,0 +1,26 @@
+# Event DSS Requirements
+
+# Data processing
+xarray>=2024.1.0
+netCDF4>=1.6.0
+cfgrib>=0.9.10.4
+scipy>=1.12.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# AWS S3 access
+boto3>=1.28.0
+botocore>=1.31.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Environment and config
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# GRIB2 processing
+eccodes>=2.30.0
+
+# Logging and utilities
+python-logging-loki>=0.3.2  # Optional: centralized logging
